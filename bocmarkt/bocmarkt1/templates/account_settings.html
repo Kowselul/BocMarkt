@@ -1,0 +1,413 @@
+{% extends 'master.html' %}
+
+{% block title %}Account Settings{% endblock %}
+
+{% block content %}
+{# ========================= MAIN CONTENT SECTION ========================= #}
+<main class="main-content">
+    <section class="content-container">
+        <div class="settings-container">
+            <h1>Account Settings</h1>
+            
+            {# -------------- Messages Section -------------- #}
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {# -------------- Navigation Tabs -------------- #}
+            <div class="settings-tabs">
+                <button class="tab-button {% if active_tab == 'info' %}active{% endif %}" onclick="showTab('info')">Account Information</button>
+                <button class="tab-button {% if active_tab == 'email' %}active{% endif %}" onclick="showTab('email')">Change Email</button>
+                <button class="tab-button {% if active_tab == 'password' %}active{% endif %}" onclick="showTab('password')">Change Password</button>
+            </div>
+
+            {# -------------- Account Information Form -------------- #}
+            <div id="info-form" class="form-section {% if active_tab == 'info' %}active{% endif %}">
+                <h2>Account Information</h2>
+                
+                <!-- Username Change Form -->
+                <form method="POST" action="{% url 'account_settings' %}?action=username" class="mb-4" onsubmit="return validateUsernameChange(event)">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Username:</label>
+                        <div class="username-info">
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control" 
+                                   value="{{ request.user.username }}" 
+                                   {% if request.user.userprofile.username_changes >= 1 %}disabled{% endif %}>
+                            {% if request.user.userprofile.username_changes < 1 %}
+                            <span class="changes-left">Changes remaining: 1</span>
+                            {% else %}
+                            <span class="no-changes-left">No username changes remaining</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button type="submit" class="save-button" {% if request.user.userprofile.username_changes >= 1 %}disabled{% endif %}>Update Username</button>
+                </form>
+
+                <hr class="form-divider">
+
+                <!-- Profile Information Form -->
+                <form method="POST" action="{% url 'account_settings' %}?action=info">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>First Name:</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name:</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ request.user.last_name }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth:</label>
+                        <input type="date" 
+                               name="date_of_birth" 
+                               class="form-control" 
+                               value="{{ request.user.userprofile.date_of_birth|date:'Y-m-d' }}"
+                               max="{{ today|date:'Y-m-d' }}"
+                               min="{{ min_date|date:'Y-m-d' }}">
+                    </div>
+                    <button type="submit" class="save-button">Update Profile Information</button>
+                </form>
+            </div>
+
+            {# -------------- Password Change Form -------------- #}
+            <div id="password-form" class="form-section {% if active_tab == 'password' %}active{% endif %}">
+                <h2>Change Password</h2>
+                <form method="POST" action="{% url 'account_settings' %}?action=password">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_old_password">Current Password:</label>
+                        {{ password_form.old_password }}
+                        {% if password_form.old_password.errors %}
+                        <ul class="errorlist">
+                            {% for error in password_form.old_password.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_new_password1">New Password:</label>
+                        {{ password_form.new_password1 }}
+                        {% if password_form.new_password1.errors %}
+                        <ul class="errorlist">
+                            {% for error in password_form.new_password1.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_new_password2">Confirm New Password:</label>
+                        {{ password_form.new_password2 }}
+                        {% if password_form.new_password2.errors %}
+                        <ul class="errorlist">
+                            {% for error in password_form.new_password2.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="save-button">Update Password</button>
+                </form>
+            </div>
+
+            {# -------------- Email Change Form -------------- #}
+            <div id="email-form" class="form-section {% if active_tab == 'email' %}active{% endif %}">
+                <h2>Change Email</h2>
+                <form method="POST" action="{% url 'account_settings' %}?action=email">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Current Email:</label>
+                        <div class="current-email">{{ request.user.email }}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>New Email:</label>
+                        <input type="email" name="email" class="form-control" placeholder="Enter new email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Email:</label>
+                        <input type="email" name="confirm_email" class="form-control" placeholder="Confirm new email" required>
+                    </div>
+                    <button type="submit" class="save-button">Update Email</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+
+{# ========================= STYLES SECTION ========================= #}
+<style>
+    /* Main Layout Styles */
+    .main-content {
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .content-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .settings-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Header Styles */
+    h1 {
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+
+    /* Alert and Messages Styles */
+    .messages {
+        margin-bottom: 20px;
+    }
+
+    .alert {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #666;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    form p {
+        margin: 0;
+    }
+
+    form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+
+    /* Input Styles */
+    form input[type="password"], 
+    form input[type="email"],
+    form input[type="text"],
+    form input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    form input[type="password"]:focus,
+    form input[type="email"]:focus,
+    form input[type="text"]:focus,
+    form input[type="date"]:focus {
+        border-color: #4CAF50;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
+    input:disabled {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
+
+    /* Username Info Styles */
+    .username-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .changes-left {
+        color: #4CAF50;
+        font-size: 14px;
+    }
+
+    .no-changes-left {
+        color: #dc3545;
+        font-size: 14px;
+    }
+
+    /* Button Styles */
+    .save-button {
+        background: #4CAF50;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+        margin-top: 10px;
+    }
+
+    .save-button:hover {
+        background: #45a049;
+    }
+
+    .save-button:disabled {
+        background: #cccccc;
+        cursor: not-allowed;
+    }
+
+    /* Tab Styles */
+    .settings-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .tab-button {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: #f5f5f5;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+
+    .tab-button.active {
+        background: #4CAF50;
+        color: white;
+    }
+
+    /* Form Section Styles */
+    .form-section {
+        display: none;
+    }
+
+    .form-section.active {
+        display: block;
+    }
+
+    /* Error Styles */
+    ul.errorlist {
+        color: #dc3545;
+        list-style: none;
+        padding: 0;
+        margin: 5px 0;
+        font-size: 14px;
+    }
+
+    /* Divider Styles */
+    .form-divider {
+        margin: 30px 0;
+        border: none;
+        border-top: 1px solid #eee;
+    }
+
+    /* Email Display Styles */
+    .current-email {
+        font-weight: bold;
+        font-size: 16px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        color: #333;
+    }
+
+    /* Utility Classes */
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .content-container {
+            margin: 10px;
+        }
+
+        .settings-container {
+            padding: 20px;
+        }
+    }
+</style>
+
+{# ========================= SCRIPTS SECTION ========================= #}
+<script>
+function showTab(tabName) {
+    const url = new URL(window.location);
+    url.searchParams.set('action', tabName);
+    window.history.pushState({}, '', url);
+
+    document.querySelectorAll('.form-section').forEach(section => {
+        section.classList.remove('active');
+    });  
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    document.getElementById(tabName + '-form').classList.add('active');
+    
+    const button = event?.target || document.querySelector(`[onclick="showTab('${tabName}')"]`);
+    button.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action') || 'info';
+    showTab(action);
+});
+
+function validateUsernameChange(event) {
+    event.preventDefault();
+    const newUsername = document.querySelector('input[name="username"]').value;
+    const currentUsername = '{{ request.user.username }}';
+    
+    if (newUsername === currentUsername) {
+        alert('The new username must be different from your current username.');
+        return false;
+    }
+    
+    if (confirm('Are you sure you want to change your username to "' + newUsername + '"?\nThis action cannot be undone.')) {
+        event.target.submit();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends 'master.html' %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+{# ========================= ORDERS CONTAINER ========================= #}
+<div class="orders-container">
+    {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+            {# -------------- Order Header -------------- #}
+            <div class="order-header">
+                <div class="order-info">
+                    <h2>Order #{{ order.id }}</h2>
+                    <p class="order-date">Placed on {{ order.created_at|date:"F j, Y" }}</p>
+                </div>
+                <div class="order-status {{ order.status }}">
+                    {{ order.get_status_display }}
+                </div>
+            </div>
+            
+            {# -------------- Order Items -------------- #}
+            <div class="order-items">
+                {% for item in order.items.all %}
+                <div class="order-item">
+                    <div class="item-image">
+                        {% if item.product.images.exists %}
+                            <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.title }}">
+                        {% else %}
+                            <div class="no-image-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="item-details">
+                        <h3>{{ item.product.title }}</h3>
+                        <p class="price">${{ item.price }}</p>
+                        <p class="seller">Seller: {{ item.product.user.username }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {# -------------- Order Footer -------------- #}
+            <div class="order-footer">
+                <div class="shipping-info">
+                    <h3>Shipping Details</h3>
+                    <p>{{ order.full_name }}</p>
+                    <p>{{ order.address }}</p>
+                    <p>{{ order.city }}, {{ order.county }}</p>
+                    <p>{{ order.zip_code }}, {{ order.get_country_display }}</p>
+                </div>
+                <div class="order-total">
+                    <span>Total:</span>
+                    <span>${{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {# -------------- Pagination -------------- #}
+        {% if orders.has_other_pages %}
+        <div class="pagination">
+            {% if orders.has_previous %}
+                <a href="?page={{ orders.previous_page_number }}" class="page-link">&laquo; Previous</a>
+            {% endif %}
+
+            {% for num in orders.paginator.page_range %}
+                {% if orders.number == num %}
+                    <span class="page-link active">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if orders.has_next %}
+                <a href="?page={{ orders.next_page_number }}" class="page-link">Next &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        {# -------------- No Orders Message -------------- #}
+        <div class="no-orders">
+            <i class="fas fa-shopping-bag"></i>
+            <p>You haven't placed any orders yet.</p>
+            <a href="{% url 'marketplace' %}" class="browse-button">Start Shopping</a>
+        </div>
+    {% endif %}
+</div>
+
+{# ========================= STYLES SECTION ========================= #}
+<style>
+    /* Container Styles */
+    .orders-container {
+        width: 100vh;
+        margin: 20px auto;
+        padding: 20px;
+    }
+
+    /* Order Card Styles */
+    .order-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* Status Badge Styles */
+    .order-status {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+
+    .order-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .order-status.processing {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .order-status.shipped {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .order-status.delivered {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .order-status.cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Order Items Styles */
+    .order-items {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .order-item {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .item-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    /* Order Footer Styles */
+    .order-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .shipping-info h3 {
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .shipping-info p {
+        margin: 5px 0;
+        color: #666;
+    }
+
+    .order-total {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    /* No Orders Message Styles */
+    .no-orders {
+        text-align: center;
+        padding: 40px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .no-orders i {
+        font-size: 3em;
+        color: #ccc;
+        margin-bottom: 20px;
+    }
+
+    .browse-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .browse-button:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    /* Pagination Styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+    .page-link {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        color: #007bff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background-color: #f8f9fa;
+        border-color: #007bff;
+    }
+
+    .page-link.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .order-footer {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .order-total {
+            text-align: right;
+        }
+
+        .pagination {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}

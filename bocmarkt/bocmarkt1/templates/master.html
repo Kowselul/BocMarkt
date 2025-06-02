@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    {# ========================= STYLES SECTION ========================= #}
+    <style>
+        /* Base Styles */
+        body {
+            background: linear-gradient(135deg, #1a1a1a, #4a4a4a);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation Bar Styles */
+        .navbar {
+            background-color: #333333ad;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+            border-bottom: 3px solid #1d1d1d;
+        }
+    
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 150px;
+        }
+    
+        /* Logo Styles */
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 100px; 
+            width: auto;
+            object-fit: contain;
+            background-color: #1a1a1a;
+            border-radius: 50px;
+        }
+    
+        /* Navigation Button Styles */
+        .nav-button {
+            color: white;
+            text-decoration: none;
+            padding: 8px 0;
+            position: relative;
+            transition: color 0.3s;
+            font-size: 20px;
+        }
+    
+        .nav-button::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: white;
+            transition: width 0.5s ease;
+        }
+    
+        .nav-button:hover::after {
+            width: 100%;
+        }
+    
+        .nav-button.active::after {
+            width: 100%;
+        }
+    
+        .nav-button:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    
+        /* Right Navigation Section */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            height: 40px;
+        }
+    
+        /* Cart and Favorites Buttons */
+        .cart-button, .favorites-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-size: 18px;
+            height: 100%;
+            background-color: #1a1a1a;
+            border-radius: 50px;
+        }
+    
+        .cart-button:hover, .favorites-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    
+        .cart-count, .favorites-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #2ecc71;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            min-width: 18px;
+            height: 18px;
+            text-align: center;
+        }
+    
+        .favorites-count {
+            background: #e74c3c;
+        }
+    
+        /* User Menu Styles */
+        .user-menu {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+    
+        .username-box {
+            background-color: #1a1a1a;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .username-box .username {
+            color: rgb(192, 192, 192) !important;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+        }
+    
+        .username-box:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    
+        /* Dropdown Menu Styles */
+        .dropdown {
+            display: block;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: white;
+            min-width: 200px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+        
+        .user-menu:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    
+        .dropdown-item {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+    
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+    
+        .dropdown-divider {
+            margin: 0;
+            border: none;
+            border-top: 1px solid #eee;
+        }
+    
+        .logout-button {
+            color: #dc3545;
+        }
+    
+        .logout-button:hover {
+            background-color: #fff5f5;
+        }
+    
+        /* Footer Styles */
+        .footer {
+            margin-top: auto;
+            background-color: #333333ad;
+            color: white;
+            padding: 40px 0;
+            width: 100%;
+        }
+    
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 0 20px;
+        }
+    
+        .copyright-section {
+            text-align: center;
+            width: 100%;
+        }
+    
+        .footer-sections-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            text-align: center;
+        }
+    
+        .footer-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+    
+        .footer-section h3 {
+            color: white;
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+    
+        .footer-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+    
+        .footer-link:hover {
+            color: white;
+        }
+    
+        .social-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+    
+        .social-links i {
+            width: 20px;
+            margin-right: 8px;
+        }
+    
+        .copyright {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+    
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .footer-sections-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+    
+            .nav-left {
+                gap: 20px;
+            }
+    
+            .nav-right {
+                gap: 12px;
+            }
+    
+            .logo img {
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {# ========================= NAVIGATION BAR ========================= #}
+    {% if not is_auth_page %}
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <img src="/media/logo/logo.png" alt="BocMarkt Logo">
+            </div>
+            <a href="{% url 'dashboard' %}" class="nav-button {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{% url 'marketplace' %}" class="nav-button {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">Marketplace</a>
+        </div>
+        <div class="nav-right">
+            <a href="{% url 'favorites' %}" class="favorites-button">
+                <i class="fas fa-heart"></i>
+                <span class="favorites-count">0</span>
+            </a>
+            <a href="{% url 'view_cart' %}" class="cart-button">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </a>
+            <div class="user-menu">
+                <div class="username-box">
+                    <span class="username">{{ request.user.username }} ▼</span>
+                </div>
+                <div class="dropdown">
+                    <a href="{% url 'user_profile' %}" class="dropdown-item">
+                        <i class="fas fa-user"></i> My profile
+                    </a>
+                    <hr class="dropdown-divider">
+                    <a href="{% url 'wallet' %}" class="dropdown-item">
+                        <i class="fas fa-wallet"></i> My Wallet
+                    </a>
+                    <hr class="dropdown-divider">
+                    <a href="{% url 'my_orders' %}" class="dropdown-item">
+                        <i class="fas fa-shopping-bag"></i> My purchases
+                    </a>
+                    <hr class="dropdown-divider">
+                    <a href="{% url 'account_settings' %}?action=password" class="dropdown-item">
+                        <i class="fas fa-cog"></i> Account Settings
+                    </a>
+                    <hr class="dropdown-divider">
+                    <a href="{% url 'logout' %}" class="dropdown-item logout-button">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    {# ========================= CONTENT BLOCK ========================= #}
+    {% block content %}{% endblock %}
+
+    {# ========================= FOOTER SECTION ========================= #}
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section copyright-section">
+                <p class="copyright">© 2025 BocMarkt. All rights reserved.</p>
+            </div>
+            
+            <div class="footer-sections-container">
+                <div class="footer-section">
+                    <h3>Company</h3>
+                    <a href="#" class="footer-link">About Us</a>
+                    <a href="#" class="footer-link">Terms & Conditions</a>
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                </div>
+    
+                <div class="footer-section">
+                    <h3>Social Media</h3>
+                    <div class="social-links">
+                        <a href="https://instagram.com/bocmarkt" target="_blank" class="footer-link">
+                            <i class="fab fa-instagram"></i> Instagram
+                        </a>
+                        <a href="https://facebook.com/bocmarkt" target="_blank" class="footer-link">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                        <a href="https://tiktok.com/bocmarkt" target="_blank" class="footer-link">
+                            <i class="fab fa-tiktok"></i> TikTok
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {# ========================= SCRIPTS SECTION ========================= #}
+    <script>
+        function updateCartCount() {
+            fetch('/cart/count/')
+                .then(response => response.json())
+                .then(data => {
+                    const cartCountElements = document.querySelectorAll('.cart-count');
+                    cartCountElements.forEach(element => {
+                        element.textContent = data.count;
+                    });
+                })
+                .catch(error => console.error('Error updating cart count:', error));
+        }
+
+        function updateFavoritesCount() {
+            return fetch('/favorites/count/')
+                .then(response => response.json())
+                .then(data => {
+                    const favoritesCountElements = document.querySelectorAll('.favorites-count');
+                    favoritesCountElements.forEach(element => {
+                        element.textContent = data.count;
+                    });
+                    return data.count;
+                })
+                .catch(error => {
+                    console.error('Error updating favorites count:', error);
+                    return 0;
+                });
+        }
+        
+        window.updateFavoritesCount = updateFavoritesCount;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            updateFavoritesCount();
+        });
+    </script>
+</body>
+</html>

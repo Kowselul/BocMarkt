@@ -1,0 +1,339 @@
+{% extends 'master.html' %}
+
+{% block title %}Add Product{% endblock %}
+
+{% block content %}
+{# ========================= PRODUCT FORM SECTION ========================= #}
+<div class="add-container">
+    <h2>Add New Product</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="clear_image" id="clear_image" value="false">
+        
+        {# -------------- Title Field -------------- #}
+        <div class="form-group">
+            <label>Title:</label>
+            {{ form.title }}
+            <div class="char-counter">
+                <span id="title-char-count">0</span>/100 characters
+            </div>
+        </div>
+        
+        {# -------------- Description Field -------------- #}
+        <div class="form-group">
+            <label>Description:</label>
+            {{ form.description }}
+            <div class="char-counter">
+                <span id="char-count">0</span>/1500 characters
+            </div>
+        </div>
+        
+        {# -------------- Price Field -------------- #}
+        <div class="form-group">
+            <label>Price:</label>
+            <div class="price-input-group">
+                {{ form.price }}
+                <span class="currency">USD</span>
+            </div>
+        </div>
+        
+        {# -------------- Category Field -------------- #}
+        <div class="form-group">
+            <label>Category:</label>
+            {{ form.category }}
+        </div>
+        
+        {# -------------- Images Field -------------- #}
+        <div class="form-group image-group">
+            <label>Images: <span class="required">*</span></label>
+            <div id="image-preview"></div>
+            <label for="image-upload" class="file-upload-btn">Choose Images</label>
+            <input type="file" id="image-upload" name="images" multiple accept="image/*" class="form-control" required>
+            <span class="selected-files" id="selected-files-text"></span>
+            <button type="button" class="clear-image-btn" onclick="clearImage()" style="display: none;">Clear Images</button>
+            <small class="help-text">You must select at least 1 image and maximum 5 images. The first image will be the main product image.</small>
+        </div>
+        
+        {# -------------- Submit Buttons -------------- #}
+        <div class="button-group">
+            <button type="submit" class="save-button">Add Product</button>
+            <a href="{% url 'dashboard' %}" class="back-button">Back to Dashboard</a>
+        </div>
+    </form>
+</div>
+
+{# ========================= STYLES SECTION ========================= #}
+<style>
+    /* Container Styles */
+    .add-container {
+        width: 600px;
+        margin: 10px auto;
+        padding: 50px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Form Group Styles */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    /* Input Styles */
+    input[type="text"], 
+    textarea, 
+    select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        resize: none;
+    }
+
+    /* Price Input Group */
+    .price-input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .currency {
+        margin-left: 10px;
+        color: #666;
+        font-weight: bold;
+    }
+
+    /* Character Counter */
+    .char-counter {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+
+    /* File Upload Styles */
+    .form-group input[type="file"] {
+        display: none;
+    }
+    
+    .file-upload-btn {
+        background: #333333ad;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    
+    .file-upload-btn:hover {
+        background: #7e7e7ead;
+    }
+
+    /* Image Preview Styles */
+    .preview-item {
+        position: relative;
+        display: inline-block;
+        margin: 10px;
+    }
+    
+    .product-image {
+        max-width: 150px;
+        max-height: 150px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 2px solid #ddd;
+    }
+    
+    .main-image-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #2ecc71;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.8em;
+    }
+
+    /* Button Styles */
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .save-button, 
+    .back-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    .save-button {
+        background: #333333ad;
+        color: white;
+        transition: background-color 0.2s;
+    }
+    
+    .save-button:hover {
+        background: #7e7e7ead;
+    }
+    
+    .back-button {
+        background: #7e7e7ead;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+    
+    .back-button:hover {
+        background: #333333ad;
+    }
+
+    .clear-image-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+
+    /* Helper Classes */
+    .required {
+        color: red;
+        margin-left: 3px;
+    }
+
+    .help-text {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .selected-files {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .image-group {
+        margin-bottom: 20px;
+    }
+</style>
+
+{# ========================= SCRIPTS SECTION ========================= #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Description Character Counter
+        const textarea = document.querySelector('textarea[name="description"]');
+        const charCount = document.getElementById('char-count');
+        
+        function updateDescriptionCount() {
+            const count = textarea.value.length;
+            charCount.textContent = count;
+            charCount.style.color = count > 1500 ? 'red' : '#666';
+            textarea.style.borderColor = count > 1500 ? 'red' : '#ddd';
+        }
+        
+        textarea.addEventListener('input', updateDescriptionCount);
+        updateDescriptionCount();
+    
+        // Title Character Counter
+        const titleInput = document.querySelector('input[name="title"]');
+        const titleCharCount = document.getElementById('title-char-count');
+        
+        function updateTitleCount() {
+            const count = titleInput.value.length;
+            titleCharCount.textContent = count;
+            titleCharCount.style.color = count > 100 ? 'red' : '#666';
+            titleInput.style.borderColor = count > 100 ? 'red' : '#ddd';
+        }
+        
+        titleInput.addEventListener('input', updateTitleCount);
+        updateTitleCount();
+
+        // Image Preview Handler
+        const imageInput = document.querySelector('input[type="file"]');
+        const selectedFilesText = document.getElementById('selected-files-text');
+        
+        imageInput.addEventListener('change', function(e) {
+            const preview = document.getElementById('image-preview');
+            preview.innerHTML = '';
+            
+            if (e.target.files.length > 5) {
+                alert('You can only upload a maximum of 5 images');
+                this.value = '';
+                selectedFilesText.textContent = '';
+                return;
+            }
+            
+            if (e.target.files.length > 0) {
+                selectedFilesText.textContent = `${e.target.files.length} ${e.target.files.length === 1 ? 'file' : 'files'} selected`;
+                
+                [...e.target.files].forEach((file, index) => {
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(`File "${file.name}" is too large. Maximum size is 5MB.`);
+                        this.value = '';
+                        selectedFilesText.textContent = '';
+                        preview.innerHTML = '';
+                        return;
+                    }
+                    
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        alert(`File "${file.name}" is not an image.`);
+                        this.value = '';
+                        selectedFilesText.textContent = '';
+                        preview.innerHTML = '';
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML += `
+                            <div class="preview-item">
+                                <img src="${e.target.result}" alt="Preview ${index + 1}" class="product-image">
+                                ${index === 0 ? '<span class="main-image-badge">Main Image</span>' : ''}
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                });
+                document.querySelector('.clear-image-btn').style.display = 'block';
+            } else {
+                selectedFilesText.textContent = '';
+                document.querySelector('.clear-image-btn').style.display = 'none';
+            }
+        });
+    });
+    
+    // Image Clear Function
+    function clearImage() {
+        const imageInput = document.querySelector('input[type="file"]');
+        const preview = document.getElementById('image-preview');
+        const selectedFilesText = document.getElementById('selected-files-text');
+        
+        imageInput.value = '';
+        preview.innerHTML = '';
+        selectedFilesText.textContent = '';
+        document.querySelector('.clear-image-btn').style.display = 'none';
+    }
+</script>
+{% endblock %}

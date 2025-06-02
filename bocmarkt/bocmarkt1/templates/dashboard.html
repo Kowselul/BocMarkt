@@ -1,0 +1,389 @@
+{% extends 'master.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{# ========================= MAIN CONTENT SECTION ========================= #}
+<main class="main-content">
+    <section class="content-container">
+        {# -------------- Section Toggle Buttons -------------- #}
+        <div class="section-toggle">
+            <button class="toggle-button active" data-section="active">Active Listings</button>
+            <button class="toggle-button" data-section="sold">Sold Items</button>
+        </div>
+
+        {# -------------- Active Listings Section -------------- #}
+        <div class="listings-container" id="active-listings">
+            <div class="listings-header">
+                <h2>Your active listings: {{ active_listings|length }}</h2>
+                <div class="filters">
+                    <select id="categoryFilter" onchange="filterByCategory(this.value)" class="filter-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <a href="{% url 'add_product' %}" class="add-listing-button">Add Listing</a>
+            </div>
+            
+            <div class="listings-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for listing in active_listings %}
+                        <tr class="listing-row">
+                            <td class="product-image">
+                                {% if listing.images.exists %}
+                                    <img src="{{ listing.images.first.image.url }}" alt="{{ listing.title }}">
+                                {% else %}
+                                    <span class="no-image">No image</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ listing.title }}</td>
+                            <td title="{{ listing.description }}">{{ listing.description|truncatechars:50 }}</td>
+                            <td>{{ listing.category.name }}</td>
+                            <td>USD {{ listing.price }}</td>
+                            <td>
+                                <a href="{% url 'edit_product' listing.id %}" class="edit-button">Edit</a> |
+                                <a href="{% url 'delete_product' listing.id %}" class="delete-button" onclick="return confirm('Are you sure you want to delete this product?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="no-listings">You have no active listings.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# -------------- Sold Items Section -------------- #}
+        <div class="listings-container sold-items hidden" id="sold-listings">
+            <div class="listings-header">
+                <h2>Sold items: {{ sold_listings|length }}</h2>
+            </div>
+            
+            <div class="listings-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Sold Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for listing in sold_listings %}
+                        <tr class="listing-row sold">
+                            <td class="product-image">
+                                {% if listing.images.exists %}
+                                    <img src="{{ listing.images.first.image.url }}" alt="{{ listing.title }}">
+                                {% else %}
+                                    <span class="no-image">No image</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ listing.title }}</td>
+                            <td title="{{ listing.description }}">{{ listing.description|truncatechars:50 }}</td>
+                            <td>{{ listing.category.name }}</td>
+                            <td>USD {{ listing.price }}</td>
+                            <td>{{ listing.sold_date|date:"F j, Y" }}</td>
+                            <td>
+                                <a href="{% url 'delete_product' listing.id %}" class="delete-button" onclick="return confirm('Are you sure you want to delete this product?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="no-listings">You have no sold items.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+{# ========================= STYLES SECTION ========================= #}
+<style>
+    /* Main Layout Styles */
+    .main-content {
+        padding: 20px;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1a1a1a, #4a4a4a);
+    }
+
+    .content-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Toggle Button Styles */
+    .section-toggle {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        justify-content: center;
+    }
+
+    .toggle-button {
+        padding: 10px 20px;
+        background-color: #333333ad;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 16px;
+    }
+
+    .toggle-button:hover {
+        background-color: #7e7e7ead;
+    }
+
+    .toggle-button.active {
+        background-color: #7e7e7ead;
+    }
+
+    /* Listings Container Styles */
+    .listings-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .listings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    /* Filter Styles */
+    .filters {
+        flex: 1;
+        max-width: 300px;
+        margin: 0 15px;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 10px 30px 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: white;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+    }
+
+    .filter-select:hover {
+        border-color: #999;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    /* Add Listing Button */
+    .add-listing-button {
+        padding: 10px 20px;
+        background-color: #333333ad;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .add-listing-button:hover {
+        background-color: #7e7e7ead;
+    }
+
+    /* Table Styles */
+    .listings-table {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .listing-row:hover {
+        background-color: #f9f9f9;
+    }
+
+    /* Product Image Styles */
+    .product-image {
+        width: 100px;
+    }
+
+    .product-image img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .no-image {
+        display: inline-block;
+        width: 80px;
+        height: 80px;
+        line-height: 80px;
+        text-align: center;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        color: #999;
+    }
+
+    /* Action Button Styles */
+    .edit-button, .delete-button {
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        transition: all 0.3s;
+    }
+
+    .edit-button {
+        color: #333333ad;
+    }
+
+    .delete-button {
+        color: #dc3545;
+    }
+
+    .edit-button:hover {
+        color: #7e7e7ead;
+    }
+
+    .delete-button:hover {
+        color: #bd2130;
+    }
+
+    /* Sold Items Styles */
+    .listings-container.sold-items {
+        margin-top: 20px;
+        background: white;
+    }
+
+    .listing-row.sold {
+        background-color: #f8f9fa;
+    }
+
+    .listing-row.sold:hover {
+        background-color: #f0f0f0;
+    }
+
+    .sold-date {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    /* Utility Classes */
+    .hidden {
+        display: none;
+    }
+
+    .no-listings {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .listings-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filters {
+            max-width: 100%;
+            margin: 10px 0;
+        }
+
+        .section-toggle {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .toggle-button {
+            width: 100%;
+        }
+    }
+</style>
+
+{# ========================= SCRIPTS SECTION ========================= #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButtons = document.querySelectorAll('.toggle-button');
+        const sections = {
+            'active': document.getElementById('active-listings'),
+            'sold': document.getElementById('sold-listings')
+        };
+
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update button states
+                toggleButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show selected section, hide others
+                const sectionToShow = this.dataset.section;
+                Object.entries(sections).forEach(([key, section]) => {
+                    if (key === sectionToShow) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    });
+
+    function filterByCategory(categoryId) {
+        if (categoryId) {
+            window.location.href = '{% url "dashboard" %}?category=' + categoryId;
+        } else {
+            window.location.href = '{% url "dashboard" %}';
+        }
+    }
+</script>
+{% endblock %}

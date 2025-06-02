@@ -1,0 +1,93 @@
+{% extends 'master.html' %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+{# ========================= ERROR PAGE SECTION ========================= #}
+<div class="error-container">
+    <div class="error-content">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+        <button onclick="window.location.href='{% url 'home' %}'" class="home-button">
+            <i class="fas fa-home"></i> Go to Homepage
+        </button>
+    </div>
+</div>
+
+{# ========================= STYLES SECTION ========================= #}
+<style>
+    /* Container Styles */
+    .error-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    /* Content Box Styles */
+    .error-content {
+        text-align: center;
+        background: white;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-width: 500px;
+        width: 100%;
+    }
+
+    /* Text Styles */
+    .error-content h1 {
+        font-size: 6em;
+        margin: 0;
+        color: #333333ad;
+        line-height: 1;
+    }
+
+    .error-content h2 {
+        font-size: 2em;
+        margin: 10px 0 20px;
+        color: #666;
+    }
+
+    .error-content p {
+        color: #777;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    /* Button Styles */
+    .home-button {
+        padding: 12px 24px;
+        background: #333333ad;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 auto;
+        transition: all 0.3s ease;
+    }
+
+    .home-button:hover {
+        background: #7e7e7ead;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .error-content h1 {
+            font-size: 4em;
+        }
+
+        .error-content h2 {
+            font-size: 1.5em;
+        }
+    }
+</style>
+{% endblock %}
